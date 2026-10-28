@@ -11,6 +11,7 @@ else {
   peer.ontrack = event => { video.srcObject = event.streams[0]; video.muted = false; video.play().catch(() => {}); state.textContent = "Conectado"; };
   peer.onicecandidate = event => event.candidate && socket.send(JSON.stringify({ ice: event.candidate }));
   socket.onmessage = async event => { const message = JSON.parse(event.data); if (message.offer) { await peer.setRemoteDescription(message.offer); const answer = await peer.createAnswer(); await peer.setLocalDescription(answer); socket.send(JSON.stringify({ answer })); } if (message.answer) await peer.setRemoteDescription(message.answer); if (message.ice) await peer.addIceCandidate(message.ice); };
-  socket.onopen = () => state.textContent = "Conectando à transmissão…";
+  socket.onopen = () => { state.textContent = "Aguardando transmissão…"; socket.send(JSON.stringify({ ready: true })); };
   socket.onerror = () => state.textContent = "Não foi possível conectar ao bridge.";
 }
+
